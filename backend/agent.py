@@ -1,7 +1,17 @@
+from backend.search import SearchEngine
+
+
 class ResearchAgent:
-    def run(self, query: str) -> dict:
+
+    def __init__(self):
+        self.search_engine = SearchEngine()
+
+    def run(self, query):
+        results = self.search_engine.search(query)
+
         return {
             "query": query,
-            "status": "received",
-            "message": "Research agent received the query"
+            "status": "completed",
+            "message": f"Found {len(results)} research result(s)",
+            "results": results
         }
