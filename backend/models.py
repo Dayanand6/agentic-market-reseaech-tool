@@ -3,6 +3,10 @@ from pydantic import BaseModel
 
 class ResearchRequest(BaseModel):
     query: str
+
+
 class ResearchResponse(BaseModel):
-   query: str
-   message: str
+    query: str
+    status: str
+    message: str
+    results: list[dict]

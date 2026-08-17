@@ -18,6 +18,7 @@ def research(request: ResearchRequest):
 
     return {
         "query": result["query"],
-        "message": result["message"]
+        "status": result["status"],
+        "message": result["message"],
+        "results": result["results"]
     }
-
