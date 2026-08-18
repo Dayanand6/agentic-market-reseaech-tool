@@ -744,3 +744,4 @@ zope.interface==8.5
 zopfli==0.4.3
 zstandard==0.25.0
 tavily-python==0.7.27
+trafilatura==2.2.0

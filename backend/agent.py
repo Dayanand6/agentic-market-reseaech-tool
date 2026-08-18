@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 from backend.search import SearchEngine
 from backend.reporter import ResearchReporter
-
+from backend.collector import collect_data
 
 # Load GEMINI_API_KEY from .env
 load_dotenv()
@@ -96,17 +96,19 @@ class ResearchAgent:
             results = self.search_engine.search(search_query)
             all_results.extend(results)
 
-        # Step 3: Generate the Phase 1 structured report
-        report = self.reporter.generate(query, all_results)
+        # Step 3: Collect full webpage content
+        enriched_results = collect_data(all_results)
 
-        # Step 4: Return the existing Phase 1 response structure
+        # Step 4: Generate the structured report
+        report = self.reporter.generate(query, enriched_results)
+        # Step 5: Return the existing response structure
         return {
             "query": query,
             "status": "completed",
             "message": (
-                f"Found {len(all_results)} research result(s) "
+                f"Found {len(enriched_results)} research result(s) "
                 f"using {len(search_queries)} planned searches"
             ),
-            "results": all_results,
+            "results": enriched_results,
             "summary": report["summary"]
         }
