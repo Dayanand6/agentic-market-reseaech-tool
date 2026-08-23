@@ -746,3 +746,4 @@ zstandard==0.25.0
 tavily-python==0.7.27
 trafilatura==2.2.0
 SQLAlchemy==2.0.52
+streamlit==1.62.0
