@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -28,6 +29,14 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://agentic-market-reseaech-tool-dqchpsrmeccxqf93gcayg7.streamlit.app"
+    ],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
 agent = ResearchAgent()
 
 # Rate limiting is applied per client IP address.
