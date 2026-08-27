@@ -21,4 +21,4 @@ class ResearchResponse(BaseModel):
     message: str
     summary: str
     results: list[dict]
-    report: dict
+    report: dict | None

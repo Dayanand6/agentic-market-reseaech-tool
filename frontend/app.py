@@ -221,8 +221,25 @@ st.markdown(
 
 st.markdown("### 🎯 Start New Research")
 
+if "query_input" not in st.session_state:
+    st.session_state["query_input"] = ""
+
+st.write("Try an example:")
+example_cols = st.columns(3)
+
+examples = [
+    "EV market in India",
+    "Plant-based food market trends",
+    "Cloud gaming industry",
+]
+
+for col, example in zip(example_cols, examples):
+    if col.button(example, use_container_width=True):
+        st.session_state["query_input"] = example
+
 query = st.text_input(
     "Market research query",
+    value=st.session_state["query_input"],
     placeholder="Example: Electric vehicle market in India",
     label_visibility="collapsed",
 )
@@ -278,15 +295,48 @@ if run_research:
                 response.raise_for_status()
                 result = response.json()
 
-                st.session_state["active_report"] = {
-                    "query": result["query"],
-                    "report": result["report"],
-                }
+                if result["status"] == "no_data":
+                    st.warning(result["message"])
+                    st.session_state["active_report"] = None
+                else:
+                    st.session_state["active_report"] = {
+                        "query": result["query"],
+                        "report": result["report"],
+                    }
 
-                st.rerun()
+                    st.rerun()
 
-            except requests.exceptions.RequestException as e:
-                st.error(f"Research failed: {e}")
+            except requests.exceptions.Timeout:
+                st.error(
+                    "The request timed out. "
+                    "The pipeline may be taking longer than expected — "
+                    "please try again."
+                )
+
+            except requests.exceptions.ConnectionError:
+                st.error(
+                    "Can't reach the backend. "
+                    "Make sure FastAPI is running with:\n\n"
+                    "`uvicorn backend.main:app --reload`"
+                )
+
+            except requests.exceptions.HTTPError:
+                if response.status_code == 429:
+                    st.error(
+                        "You're sending requests too quickly. "
+                        "Please wait a minute and try again."
+                    )
+                else:
+                    st.error(
+                        f"Research failed "
+                        f"(server returned {response.status_code})."
+                    )
+
+            except requests.exceptions.RequestException:
+                st.error(
+                    "Something went wrong while contacting the research backend. "
+                    "Please try again."
+                )
 
 # ============================================================
 # REPORT DISPLAY

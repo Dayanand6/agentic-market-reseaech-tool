@@ -86,27 +86,59 @@ class ResearchAgent:
         self.reporter = ResearchReporter()
 
     def run(self, query: str) -> dict:
+        print(f"[{query}] Creating research plan...")
+
         # Step 1: Ask Gemini to create a research plan
         search_queries = create_research_plan(query)
+        print(f"[{query}] Plan: {search_queries}")
 
         # Step 2: Execute each planned search
+        print(f"[{query}] Running searches...")
         all_results = []
 
         for search_query in search_queries:
             results = self.search_engine.search(search_query)
             all_results.extend(results)
 
+        print(f"[{query}] Found {len(all_results)} raw results")
+
         # Step 3: Collect full webpage content
+        print(f"[{query}] Collecting full content...")
         enriched_results = collect_data(all_results)
 
+        print(
+            f"[{query}] Collected "
+            f"{len(enriched_results)} usable sources"
+        )
+
+        # Phase 9: Stop cleanly when no usable sources are found.
+        # Do not call the Gemini analyzer with empty evidence.
+        if not enriched_results:
+            print(f"[{query}] No usable sources found.")
+            return {
+                "query": query,
+                "status": "no_data",
+                "message": (
+                    "No usable sources were found for this query. "
+                    "Try rephrasing it to be more specific or well-known."
+                ),
+                "results": [],
+                "summary": "",
+                "report": None
+            }
+
         # Step 4: Analyze the collected research using Gemini
+        print(f"[{query}] Analyzing...")
         analysis = analyze_market_research(
             query,
             enriched_results
         )
 
+        print(f"[{query}] Analysis complete")
+
         # Step 5: Generate the structured report
         report = self.reporter.generate(query, enriched_results)
+
         # Step 6: Return the existing response structure
         return {
             "query": query,

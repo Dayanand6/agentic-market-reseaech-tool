@@ -54,13 +54,22 @@ def research(
     try:
         result = agent.run(payload.query)
 
+        if result["status"] == "no_data":
+            return {
+                "query": result["query"],
+                "status": result["status"],
+                "message": result["message"],
+                "summary": result["summary"],
+                "results": result["results"],
+                "report": None
+            }
+
         save_research_run(
             db,
             result["query"],
             result["results"],
             result["report"]
         )
-
         return {
             "query": result["query"],
             "status": result["status"],
