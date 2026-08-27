@@ -472,7 +472,7 @@ if active:
         ):
             for index, url in enumerate(sources, start=1):
                 st.markdown(f"**Source {index}**")
-                st.markdown(f"[Open source]({url})")
+                st.link_button("Open source", url)
                 st.divider()
     else:
         st.info(

@@ -1,6 +1,31 @@
 import trafilatura
 
 
+SUSPICIOUS_PATTERNS = [
+    "ignore previous instructions",
+    "ignore all previous instructions",
+    "disregard the above",
+    "disregard previous",
+    "new instructions:",
+    "system prompt",
+    "you are now",
+]
+
+
+def flag_suspicious_content(text: str) -> bool:
+    """
+    Basic heuristic check for text resembling a prompt injection attempt.
+
+    This is a monitoring layer, not a blocking mechanism.
+    """
+    lowered = text.lower()
+
+    return any(
+        pattern in lowered
+        for pattern in SUSPICIOUS_PATTERNS
+    )
+
+
 def fetch_full_content(url: str, max_chars: int = 8000) -> str | None:
     """
     Download a webpage and extract clean article text.
@@ -37,10 +62,18 @@ def collect_data(sources: list[dict]) -> list[dict]:
     for source in sources:
         full_text = fetch_full_content(source["url"])
 
+        content = full_text if full_text else source["snippet"]
+
+        if flag_suspicious_content(content):
+            print(
+                f"⚠️ Suspicious content pattern detected in: "
+                f"{source['url']}"
+            )
+
         enriched.append({
             "title": source["title"],
             "url": source["url"],
-            "content": full_text if full_text else source["snippet"]
+            "content": content
         })
 
     return enriched
