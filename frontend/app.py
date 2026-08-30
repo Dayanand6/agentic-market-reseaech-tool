@@ -289,7 +289,7 @@ if run_research:
                 response = requests.post(
                     f"{BACKEND_URL}/research",
                     json={"query": query.strip()},
-                    timeout=180,
+                    timeout=420,
                 )
 
                 response.raise_for_status()
