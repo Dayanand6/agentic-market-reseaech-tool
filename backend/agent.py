@@ -1,4 +1,3 @@
-import time
 from google import genai
 from dotenv import load_dotenv
 
@@ -87,79 +86,35 @@ class ResearchAgent:
         self.reporter = ResearchReporter()
 
     def run(self, query: str) -> dict:
-        total_start = time.perf_counter()
-
-        print(f"[{query}] Creating research plan...", flush=True)
-        planner_start = time.perf_counter()
+        print(f"[{query}] Creating research plan...")
 
         # Step 1: Ask Gemini to create a research plan
         search_queries = create_research_plan(query)
-
-        planner_elapsed = time.perf_counter() - planner_start
-
-        print(
-            f"[{query}] Plan: {search_queries}",
-            flush=True
-        )
-        print(
-            f"[{query}] Planner time: {planner_elapsed:.2f}s",
-            flush=True
-        )
+        print(f"[{query}] Plan: {search_queries}")
 
         # Step 2: Execute each planned search
-        print(f"[{query}] Running searches...", flush=True)
-        search_start = time.perf_counter()
-
+        print(f"[{query}] Running searches...")
         all_results = []
 
         for search_query in search_queries:
             results = self.search_engine.search(search_query)
             all_results.extend(results)
 
-        search_elapsed = time.perf_counter() - search_start
-
-        print(
-            f"[{query}] Found {len(all_results)} raw results",
-            flush=True
-        )
-        print(
-            f"[{query}] Search time: {search_elapsed:.2f}s",
-            flush=True
-        )
+        print(f"[{query}] Found {len(all_results)} raw results")
 
         # Step 3: Collect full webpage content
-        print(f"[{query}] Collecting full content...", flush=True)
-        collection_start = time.perf_counter()
-
+        print(f"[{query}] Collecting full content...")
         enriched_results = collect_data(all_results)
-
-        collection_elapsed = time.perf_counter() - collection_start
 
         print(
             f"[{query}] Collected "
-            f"{len(enriched_results)} usable sources",
-            flush=True
-        )
-        print(
-            f"[{query}] Collection time: {collection_elapsed:.2f}s",
-            flush=True
+            f"{len(enriched_results)} usable sources"
         )
 
         # Phase 9: Stop cleanly when no usable sources are found.
         # Do not call the Gemini analyzer with empty evidence.
         if not enriched_results:
-            total_elapsed = time.perf_counter() - total_start
-
-            print(
-                f"[{query}] No usable sources found.",
-                flush=True
-            )
-            print(
-                f"[{query}] Total pipeline time: "
-                f"{total_elapsed:.2f}s",
-                flush=True
-            )
-
+            print(f"[{query}] No usable sources found.")
             return {
                 "query": query,
                 "status": "no_data",
@@ -173,50 +128,18 @@ class ResearchAgent:
             }
 
         # Step 4: Analyze the collected research using Gemini
-        print(f"[{query}] Analyzing...", flush=True)
-        analysis_start = time.perf_counter()
-
+        print(f"[{query}] Analyzing...")
         analysis = analyze_market_research(
             query,
             enriched_results
         )
 
-        analysis_elapsed = time.perf_counter() - analysis_start
-
-        print(
-            f"[{query}] Analysis complete",
-            flush=True
-        )
-        print(
-            f"[{query}] Analysis time: {analysis_elapsed:.2f}s",
-            flush=True
-        )
+        print(f"[{query}] Analysis complete")
 
         # Step 5: Generate the structured report
-        report_start = time.perf_counter()
-
-        report = self.reporter.generate(
-            query,
-            enriched_results
-        )
-
-        report_elapsed = time.perf_counter() - report_start
-
-        print(
-            f"[{query}] Report generation time: "
-            f"{report_elapsed:.2f}s",
-            flush=True
-        )
+        report = self.reporter.generate(query, enriched_results)
 
         # Step 6: Return the existing response structure
-        total_elapsed = time.perf_counter() - total_start
-
-        print(
-            f"[{query}] Total pipeline time: "
-            f"{total_elapsed:.2f}s",
-            flush=True
-        )
-
         return {
             "query": query,
             "status": "completed",
